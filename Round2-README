@@ -1,0 +1,77 @@
+一、项目拆解——把需求安排在一定的时间内完成，给出项目各个阶段和小项目的完成时间。
+二、项目实施——实现需求，把项目的实施代码，上传到github。
+一、项目拆解：
+1.数据预处理
+先对每个文件中的数据进行预处理，利用mapreduce留下有用的部分，去除掉不需要的部分。
+2.数据存储
+HDFS存储日志信息，Hive存储处理后的日志信息，Hbase存储日志信息用来实时查询。
+3.需求查询
+对于用户需求，使用Hive、mapreduce进行分析，取得结果。保存到HDFS文件中。
+4.实时查询
+根据用户需求，使用Hbase、mapreduce查询结果，并展示给用户
+
+需求1：
+输入为一天/一周/一个月的日志信息，输出为每日/每周/每月的UV数量，mapreduce处理。
+map输出：
+key:ip
+没有value值
+reduce输入：key:ip，values:null;
+输出：
+key:"UV时间："
+value：UV数量
+需求2：
+输入：一个月或几个月的日志信息，输出：每日的PV数量
+map输出：
+key:准确到天的时间
+value:ip+"\t"+准确到秒的时间
+reduce输入：
+key:准确到天的时间
+values:ip+"\t"+准确到秒的时间的集合
+reduce输出：
+key:准确到天的时间
+value：PV数量
+需求3：
+输入：两天的日志信息，输出：次日留存率
+map输出：
+key:ip
+value:准确到天的时间
+reduce输入：
+key:ip
+values:时间的集合
+reduce输出：
+key:"TheNextDayLeft:"
+value:次日留存率
+输入：两个月的日志信息，输出：次月留存率
+map输出：
+key:ip
+value:准确到月的时间
+reduce输入：
+key:ip
+values:时间的集合
+reduce输出：
+key:"TheNextMonthLeft:"
+value:次月留存率
+
+1.数据预处理
+对日志文件进行正则分割，mapreduce处理，取出IP，时间，url，refer，os,user_agent.
+Input：日志文件
+output：处理后的日志文件。
+map输出：
+key：IP+"\t"+时间+"\t"+url+"\t"+refer+"\t"+os+"\t"+user_agent
+没有value值
+reduce输出：
+key：IP+"\t"+时间+"\t"+url+"\t"+refer+"\t"+os+"\t"+user_agent
+没有value值
+存储到Hive中。
+create external table zms_ele(
+ip string,
+time string,
+url string,
+refer string,
+os string,
+user_agent string
+)
+partitioned by (pdate string)
+row format delimited fields terminated by '\t' 
+load data local inpath '/home/hadoop/qst/zhangmingsheng/1213/data_hive' into table zms_ele partition(pdate='2015-10-01');
+

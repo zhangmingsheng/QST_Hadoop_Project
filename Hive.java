@@ -20,7 +20,7 @@ public class Hive {
 			Mapper<LongWritable, Text, Text, NullWritable> {
 		private static String pattern = "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) [^ ]+ [^ ]+ \\[[^ ]+ [^ ]+\\] \"[^ ]+ ([^ ]+) ";
 		private static Pattern r = Pattern.compile(pattern);
-		private String sPattern = "^(/\\w+/\\d+)($|\\?.*)";
+		private String sPattern = "^(/\\w+)(/\\d+$|\\?.*)";
 
 		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
@@ -29,7 +29,7 @@ public class Hive {
 			String show = null;
 			String refer = null;
 			String country = "for";
-			String address = null;
+			String address = "";
 			Matcher ma = r.matcher(value.toString());
 			if (ma.find()) {
 				String[] line = value.toString().split(" ", 13);

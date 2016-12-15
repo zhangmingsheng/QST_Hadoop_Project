@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,12 +24,25 @@ public class Hive {
 
 		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
+			AddressUtils addressUtils = new AddressUtils();
 			String os = null;
 			String show = null;
 			String refer = null;
+			String country = "for";
+			String address = null;
 			Matcher ma = r.matcher(value.toString());
 			if (ma.find()) {
 				String[] line = value.toString().split(" ", 13);
+				try {
+					country = addressUtils.getCountry("ip=" + line[0], "utf-8");
+					if (country == "中国") {
+						address = addressUtils.getAddresses("ip=" + line[0], "utf-8");
+					} else if (country != "中国") {
+						address = "foreign";
+					}
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 				if (line.length > 12) {
 					Pattern rShow = Pattern.compile(sPattern);
 					Matcher m = rShow.matcher(line[6]);
@@ -51,11 +65,11 @@ public class Hive {
 					}
 					
 					String st = line[3].substring(1, line[3].length());
-					String str = line[0] + "\t" + st + "\t" + show + "\t"
+					String str = line[0] + "\t" +address+ "\t" + st + "\t" + show + "\t"
 							+ refer + "\t" + os + "\t" + line[12];
 					context.write(new Text(str), NullWritable.get());
 				}
-			}
+				}
 		}
 	}
 

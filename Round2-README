@@ -10,7 +10,7 @@ HDFS存储日志信息，Hive存储处理后的日志信息，Hbase存储日志�
 4.实时查询
 根据用户需求，使用Hbase、mapreduce查询结果，并展示给用户
 
-需求1：
+需求1：统计每日、周、月的UV数量
 输入为一天/一周/一个月的日志信息，输出为每日/每周/每月的UV数量，mapreduce处理。
 map输出：
 key:ip
@@ -19,7 +19,7 @@ reduce输入：key:ip，values:null;
 输出：
 key:"UV时间："
 value：UV数量
-需求2：
+需求2：统计每日的PV量
 输入：一个月或几个月的日志信息，输出：每日的PV数量
 map输出：
 key:准确到天的时间
@@ -30,7 +30,7 @@ values:ip+"\t"+准确到秒的时间的集合
 reduce输出：
 key:准确到天的时间
 value：PV数量
-需求3：
+需求3：统计次日留存、次月留存
 输入：两天的日志信息，输出：次日留存率
 map输出：
 key:ip
@@ -76,12 +76,12 @@ partitioned by (pdate string)
 row format delimited fields terminated by '\t';
 load data local inpath '/home/hadoop/qst/zhangmingsheng/1213/data_hive' into table zms_ele partition(pdate='2015-10-01');
 
-需求5：
+需求5：统计每天从baidu跳转过来的PV
 select count(ip) from zms_ele where refer='www.baidu.com' group by pdate;
-需求6：
+需求6：统计每天iOS和Android的UV数
 select count(distinct ip) from zms_ele where os = 'iOS' group by pdate;
 select count(distinct ip) from zms_ele where os = 'Android' group by pdate;
-需求7：
+需求7：统计每天各个省份的UV数量
 select count(distinct ip) from zms_ele where pdate = '2015-10-01' group by address；
 需求8：统计每天每个省份访问的show的Top-5（按照UV量）
 select a.address,a.ci from(select address,count(distinct ip) ci from zms_ele_01 where url = '/show' group by address) as a order by a.ci desc limit 5;

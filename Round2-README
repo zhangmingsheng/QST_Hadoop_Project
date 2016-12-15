@@ -65,6 +65,7 @@ key：IP+"\t"+时间+"\t"+url+"\t"+refer+"\t"+os+"\t"+user_agent
 存储到Hive中。
 create external table zms_ele(
 ip string,
+address string,
 time string,
 url string,
 refer string,
@@ -72,6 +73,16 @@ os string,
 user_agent string
 )
 partitioned by (pdate string)
-row format delimited fields terminated by '\t' 
+row format delimited fields terminated by '\t';
 load data local inpath '/home/hadoop/qst/zhangmingsheng/1213/data_hive' into table zms_ele partition(pdate='2015-10-01');
+
+需求5：
+select count(ip) from zms_ele where refer='www.baidu.com' group by pdate;
+需求6：
+select count(distinct ip) from zms_ele where os = 'iOS' group by pdate;
+select count(distinct ip) from zms_ele where os = 'Android' group by pdate;
+需求7：
+select count(distinct ip) from zms_ele where pdate = '2015-10-01' group by address；
+需求8：统计每天每个省份访问的show的Top-5（按照UV量）
+select a.address,a.ci from(select address,count(distinct ip) ci from zms_ele_01 where url = '/show' group by address) as a order by a.ci desc limit 5;
 
